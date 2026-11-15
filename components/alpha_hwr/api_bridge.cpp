@@ -61,9 +61,6 @@ void AlphaHwrApiBridge::setup(AlphaHwrComponent *component) {
                    {"mode", "op_id"});
   register_service(&AlphaHwrApiBridge::on_set_setpoint, name(WriteCommand::SET_SETPOINT),
                    {"mode", "value", "op_id"});
-  register_service(&AlphaHwrApiBridge::on_set_temperature_range,
-                   name(WriteCommand::SET_TEMPERATURE_RANGE),
-                   {"min_c", "max_c", "autoadapt", "op_id"});
   register_service(&AlphaHwrApiBridge::on_set_cycle_times, name(WriteCommand::SET_CYCLE_TIMES),
                    {"on_minutes", "off_minutes", "flow", "op_id"});
   // The limiter is named rather than numbered (issue #299). "600"/"601" are
@@ -367,11 +364,6 @@ void AlphaHwrApiBridge::fire_write_settled(const WriteResult &result) {
       if (result.mode != ControlMode::NONE) data["mode"] = ControlService::mode_to_string(result.mode);
       put_float("value", result.value, "%.4g");
       put_bool("enabled", result.enabled);
-      break;
-    case WriteCommand::SET_TEMPERATURE_RANGE:
-      put_float("temp_min", result.temp_min, "%.1f");
-      put_float("temp_max", result.temp_max, "%.1f");
-      put_bool("autoadapt", result.autoadapt);
       break;
     case WriteCommand::SET_CYCLE_TIMES:
       if (result.on_minutes >= 0) data["on_minutes"] = std::to_string(result.on_minutes);

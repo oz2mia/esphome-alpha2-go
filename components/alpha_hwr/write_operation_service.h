@@ -23,7 +23,6 @@ enum class WriteCommand : uint8_t {
   SET_PUMP_ENABLED,
   SET_MODE,
   SET_SETPOINT,
-  SET_TEMPERATURE_RANGE,
   SET_CYCLE_TIMES,
   SET_FLOW_LIMITER,  // MaxFlow / MinFlow cap and enable (issue #299)
   SET_SCHEDULE_ENTRY,
@@ -599,8 +598,6 @@ class WriteOperationService {
   void confirm_mode_(uint32_t seq);
   void run_set_setpoint_(uint32_t seq);
   void confirm_setpoint_(uint32_t seq);
-  void run_set_temperature_range_(uint32_t seq);
-  void confirm_temperature_range_(uint32_t seq);
   void run_set_cycle_times_(uint32_t seq);
   void confirm_cycle_times_(uint32_t seq);
   void run_set_flow_limiter_(uint32_t seq);

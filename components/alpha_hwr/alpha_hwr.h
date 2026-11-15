@@ -1438,19 +1438,6 @@ public:
     write_op_service_.submit_set_setpoint(services::ControlMode::CONSTANT_FLOW, value_m3h, "",
                                           callback, services::WriteOrigin::ENTITY);
   }
-  void set_temperature_range(float min_temp, float max_temp, bool autoadapt,
-                             std::function<void(bool)> callback) {
-    if (!check_ready("set_temperature_range")) {
-      services::WriteResult r = not_ready_refusal_(services::WriteCommand::SET_TEMPERATURE_RANGE);
-      r.requested_temp_min = min_temp;
-      r.requested_temp_max = max_temp;
-      refuse_entity_write_(r);
-      if (callback) callback(false);
-      return;
-    }
-    write_op_service_.submit_set_temperature_range(min_temp, max_temp, autoadapt, "", callback,
-                                                   services::WriteOrigin::ENTITY);
-  }
   void set_proportional_pressure(float value_m,
                                  std::function<void(bool)> callback) {
     if (!check_ready("set_proportional_pressure")) {

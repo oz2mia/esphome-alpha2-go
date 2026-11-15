@@ -849,18 +849,6 @@ class ControlService {
   void write_temp_range_config(float min_temp, float max_temp, bool autoadapt_enabled,
                                std::function<void(bool)> on_ack);
 
-  /**
-   * Read the DHW on/off configuration (Object 91 Sub 421, type 985
-   * DHWOnOffControlConfiguration: [setpoint f32][on u8][off u8]) and refresh
-   * cached_cycle_time_on_/off_ plus the raw setpoint bytes. This is the
-   * object that actually holds the live cycle times; the Sub 430 block the
-   * component previously read is the temperature-range user settings, whose
-   * trailing bytes are on/off-time LIMITS and invariant to the cycle
-   * configuration (issue #106, GENI profile 52/7 + GO-app captures).
-   *
-   * @param callback Called with true when the read parsed and caches updated.
-   */
-  void read_dhw_config(std::function<void(bool)> callback);
 
   /**
    * Read the pump's per-mode setpoint ranges (issue #273).
@@ -915,22 +903,7 @@ class ControlService {
   void read_one_setpoint_range_(ControlMode mode, uint16_t sub,
                                 std::function<void(bool)> callback);
 
-  /**
-   * Write the DHW on/off configuration (Object 91 Sub 421, OpSpec 0x8F,
-   * obj-first addressing, mirroring the GO app's capture frame byte for
-   * byte). Read-modify-write: callers MUST read first — returns false
-   * without sending when no config is cached. No configuration commit is
-   * needed (capture-verified: the GO app sends none and the value persists).
-   *
-   * @param on_ack Called with the pump's short ACK result.
-   * @param setpoint_be4 Optional new flow setpoint as 4 wire bytes (f32 BE,
-   *   m³/s; issue #107). nullptr echoes the stored setpoint bytes verbatim
-   *   from the last read_dhw_config().
-   */
-  bool write_dhw_config(uint8_t on_minutes, uint8_t off_minutes,
-                        std::function<void(bool)> on_ack,
-                        const uint8_t *setpoint_be4 = nullptr);
-
+  
   /**
    * Write one flow-limiter configuration record (Object 86, Sub 600 or 601,
    * type 895 v1). Issue #299.
@@ -960,16 +933,7 @@ class ControlService {
    */
   bool write_limiter_config(uint16_t sub, bool enabled, float limit_m3s,
                             std::function<void(bool)> on_ack);
-
-  /**
-   * Read Object 91 Sub 430 (temperature range, AutoAdapt, cycle times) and
-   * refresh the corresponding caches. Extracted from sync_cache_async() so the
-   * write-operation layer can confirm config writes without re-reading the mode.
-   *
-   * @param callback Called with true when the read parsed and caches updated.
-   */
-  void read_obj91_config(std::function<void(bool)> callback);
-
+  
   /**
    * Store a pump-native setpoint into the given mode's per-mode cache (issue #51),
    * converting to display units. Keyed on the passed mode rather than
