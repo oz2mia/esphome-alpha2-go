@@ -65,7 +65,8 @@ MotorStateTelemetry decode_motor_state_response(const uint8_t* data, size_t len)
   if (len >= 33) {
     float dc_power = decode_float_be(data, 29);
     if (std::isfinite(dc_power) && dc_power >= 0 && dc_power <= 1000) {
-    // Publish through a new dc_power field
+      result.has_dc_power = true;
+      result.dc_power_w = dc_power;
     }
   }
   
@@ -92,7 +93,8 @@ MotorStateTelemetry decode_motor_state_response(const uint8_t* data, size_t len)
   if (len >= 49) {
     float aux_temp = decode_float_be(data, 45);
     if (std::isfinite(aux_temp) && aux_temp >= -20 && aux_temp <= 120) {
-      // Publish through a new aux_temperature field
+      result.has_aux_temperature = true;
+      result.aux_temperature_c = aux_temp;
     }
   }
 
