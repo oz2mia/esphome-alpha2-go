@@ -713,6 +713,14 @@ async def to_code(config):
         sens = await sensor.new_sensor(config[CONF_POWER])
         cg.add(var.set_power_sensor(sens))
 
+    if CONF_DC_POWER in config:
+        sens = await sensor.new_sensor(config[CONF_DC_POWER])
+        cg.add(var.set_dc_power_sensor(sens))
+
+    if CONF_AUX_TEMPERATURE in config:
+        sens = await sensor.new_sensor(config[CONF_AUX_TEMPERATURE])
+        cg.add(var.set_aux_temperature_sensor(sens))
+
     if CONF_RPM in config:
         sens = await sensor.new_sensor(config[CONF_RPM])
         cg.add(var.set_rpm_sensor(sens))
