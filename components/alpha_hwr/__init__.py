@@ -71,6 +71,8 @@ AlphaHwrComponent = alpha_hwr_ns.class_("AlphaHwrComponent", cg.PollingComponent
 CONF_FLOW = "flow"
 CONF_HEAD = "head"
 CONF_POWER = "power"
+CONF_DC_POWER = "dc_power"
+CONF_AUX_TEMPERATURE = "aux_temperature"
 CONF_RPM = "rpm"
 CONF_TEMP_MEDIA = "temp_media"
 CONF_TEMP_PCB = "temp_pcb"
@@ -322,6 +324,18 @@ CONFIG_SCHEMA = (
                 unit_of_measurement=UNIT_WATT,
                 accuracy_decimals=1,
                 device_class=DEVICE_CLASS_POWER,
+                state_class=STATE_CLASS_MEASUREMENT,
+            ),
+            cv.Optional(CONF_DC_POWER): sensor.sensor_schema(
+                unit_of_measurement=UNIT_WATT,
+                accuracy_decimals=1,
+                device_class=DEVICE_CLASS_POWER,
+                state_class=STATE_CLASS_MEASUREMENT,
+            ),
+            cv.Optional(CONF_AUX_TEMPERATURE): sensor.sensor_schema(
+                unit_of_measurement=UNIT_CELSIUS,
+                accuracy_decimals=1,
+                device_class=DEVICE_CLASS_TEMPERATURE,
                 state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_RPM): sensor.sensor_schema(

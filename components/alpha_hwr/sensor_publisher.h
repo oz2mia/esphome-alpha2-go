@@ -79,6 +79,8 @@ class SensorPublisher {
   void set_flow_sensor(sensor::Sensor *sensor) { flow_sensor_ = sensor; }
   void set_head_sensor(sensor::Sensor *sensor) { head_sensor_ = sensor; }
   void set_power_sensor(sensor::Sensor *sensor) { power_sensor_ = sensor; }
+  void set_dc_power_sensor(sensor::Sensor *sensor) { dc_power_sensor_ = sensor; }
+  void set_aux_temperature_sensor(sensor::Sensor *sensor) { aux_temperature_sensor_ = sensor; }
   void set_rpm_sensor(sensor::Sensor *sensor) { rpm_sensor_ = sensor; }
   void set_temp_media_sensor(sensor::Sensor *sensor) { temp_media_sensor_ = sensor; }
   void set_temp_pcb_sensor(sensor::Sensor *sensor) { temp_pcb_sensor_ = sensor; }
@@ -152,6 +154,8 @@ class SensorPublisher {
   sensor::Sensor *flow_sensor_{nullptr};
   sensor::Sensor *head_sensor_{nullptr};
   sensor::Sensor *power_sensor_{nullptr};
+  sensor::Sensor *dc_power_sensor_{nullptr};
+  sensor::Sensor *aux_temperature_sensor_{nullptr};
   sensor::Sensor *rpm_sensor_{nullptr};
   sensor::Sensor *temp_media_sensor_{nullptr};
   sensor::Sensor *temp_pcb_sensor_{nullptr};

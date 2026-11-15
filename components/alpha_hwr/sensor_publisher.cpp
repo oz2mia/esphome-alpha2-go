@@ -85,6 +85,16 @@ void SensorPublisher::publish_motor_state(const protocol::MotorStateTelemetry& m
   if (motor.has_speed && rpm_sensor_ != nullptr) {
     rpm_sensor_->publish_state(motor.speed_rpm);
   }
+  
+  // ALPHA2 GO - DC power consumption
+  if (motor.has_dc_power && dc_power_sensor_ != nullptr) {
+    dc_power_sensor_->publish_state(motor.dc_power_w);
+  }
+
+  // ALPHA2 GO - Auxiliary temperature
+  if (motor.has_aux_temperature && aux_temperature_sensor_ != nullptr) {
+    aux_temperature_sensor_->publish_state(motor.aux_temperature_c);
+  }
 }
 
 void SensorPublisher::publish_flow_pressure(const protocol::FlowPressureTelemetry& flow) {

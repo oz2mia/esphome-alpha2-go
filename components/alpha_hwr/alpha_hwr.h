@@ -119,6 +119,12 @@ public:
   void set_power_sensor(sensor::Sensor *sensor) {
     sensor_publisher_.set_power_sensor(sensor);
   }
+  void set_dc_power_sensor(sensor::Sensor *sensor) {
+    sensor_publisher_.set_dc_power_sensor(sensor);
+  }
+  void set_aux_temperature_sensor(sensor::Sensor *sensor) {
+    sensor_publisher_.set_aux_temperature_sensor(sensor);
+  }
   void set_rpm_sensor(sensor::Sensor *sensor) {
     sensor_publisher_.set_rpm_sensor(sensor);
   }
