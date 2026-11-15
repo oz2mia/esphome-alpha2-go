@@ -109,7 +109,7 @@ struct FlowPressureTelemetry {
     : has_flow(false), flow_m3h(0),
       has_head(false), head_m(0),
       has_inlet_pressure(false), inlet_pressure_bar(0),
-      has_outlet_pressure(false), outlet_pressure_bar(0) {},
+      has_outlet_pressure(false), outlet_pressure_bar(0),
       has_differential_pressure(false), differential_pressure_kpa(0) {}
 };
 
