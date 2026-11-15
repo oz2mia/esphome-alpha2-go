@@ -103,16 +103,37 @@ MotorStateTelemetry decode_motor_state_response(const uint8_t* data, size_t len)
 
 FlowPressureTelemetry decode_flow_pressure_response(const uint8_t* data, size_t len) {
   FlowPressureTelemetry result;
-  
-  // Flow/pressure response: floats start at offset 13
-  // Float array layout:
-  // [0-5] = Reserved/unknown
-  // [6] = Flow rate (m³/h) at offset 37
-  // [7] = Head pressure (m) at offset 41
-  // [8] = Inlet pressure (bar) at offset 45 - often NaN
-  // [9] = Outlet pressure (bar) at offset 49 - often NaN
-  
-   // Flow: m³/h
+
+  // GENI 93/290 - type 565 v2
+  // Float array starts at offset 13
+
+  // Differential pressure: Pa -> kPa
+  if (len >= 21) {
+    float pressure = decode_float_be(data, 17);
+    if (std::isfinite(pressure) &&
+        pressure >= 0 && pressure <= 1000000) {
+      result.has_differential_pressure = true;
+      result.differential_pressure_kpa = pressure / 1000.0f;
+    }
+  }
+
+  // Inlet pressure: Pa -> bar
+  if (len >= 25) {
+    float pressure = decode_float_be(data, 21);
+    result.has_inlet_pressure = true;
+    result.inlet_pressure_bar =
+        std::isfinite(pressure) ? pressure / 100000.0f : NAN;
+  }
+
+  // Outlet pressure: Pa -> bar
+  if (len >= 29) {
+    float pressure = decode_float_be(data, 25);
+    result.has_outlet_pressure = true;
+    result.outlet_pressure_bar =
+        std::isfinite(pressure) ? pressure / 100000.0f : NAN;
+  }
+
+  // Flow: m³/h
   if (len >= 41) {
     float flow = decode_float_be(data, 37);
     if (std::isfinite(flow) && flow >= 0 && flow <= 100) {
