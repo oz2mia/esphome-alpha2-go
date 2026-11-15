@@ -63,6 +63,9 @@ struct MotorStateTelemetry {
   bool has_power;
   float power_w;
   
+  bool has_dc_power;
+  float dc_power_w;
+
   bool has_aux_temperature;
   float aux_temperature_c;
 
@@ -77,6 +80,7 @@ struct MotorStateTelemetry {
       has_voltage_dc(false), voltage_dc_v(0),
       has_current(false), current_a(0),
       has_power(false), power_w(0),
+      has_dc_power(false), dc_power_w(0),
       has_aux_temperature(false), aux_temperature_c(0),
       has_speed(false), speed_rpm(0),
       has_converter_temp(false), converter_temperature_c(0) {}
