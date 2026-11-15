@@ -84,6 +84,8 @@ CONF_INLET_PRESSURE = "inlet_pressure"
 CONF_HEAD_RATE = "head_rate"
 CONF_PAIRING_STATUS = "pairing_status"
 CONF_READY_STATUS = "ready_status"
+CONF_DIFFERENTIAL_PRESSURE = "differential_pressure"
+
 # Renamed from `enable_pairing` (issue #245). The old name reads as a property
 # of the LINK -- "this node will not bond" -- and that is a guarantee no ESPHome
 # component can make: when the pump initiates, `BLEClientBase::gap_event_handler()`
@@ -391,6 +393,12 @@ CONFIG_SCHEMA = (
                 state_class=STATE_CLASS_MEASUREMENT,
                 entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
                 icon="mdi:gauge",
+            ),
+            cv.Optional(CONF_DIFFERENTIAL_PRESSURE): sensor.sensor_schema(
+                unit_of_measurement="kPa",
+                accuracy_decimals=2,
+                device_class="pressure",
+                state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_PAIRING_STATUS): binary_sensor.binary_sensor_schema(
                 device_class=DEVICE_CLASS_CONNECTIVITY,
@@ -752,6 +760,10 @@ async def to_code(config):
     if CONF_INLET_PRESSURE in config:
         sens = await sensor.new_sensor(config[CONF_INLET_PRESSURE])
         cg.add(var.set_inlet_pressure_sensor(sens))
+
+    if CONF_DIFFERENTIAL_PRESSURE in config:
+        sens = await sensor.new_sensor(config[CONF_DIFFERENTIAL_PRESSURE])
+        cg.add(var.set_differential_pressure_sensor(sens))
 
     if CONF_HEAD_RATE in config:
         sens = await sensor.new_sensor(config[CONF_HEAD_RATE])

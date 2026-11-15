@@ -85,7 +85,7 @@ void SensorPublisher::publish_motor_state(const protocol::MotorStateTelemetry& m
   if (motor.has_speed && rpm_sensor_ != nullptr) {
     rpm_sensor_->publish_state(motor.speed_rpm);
   }
-  
+
   // ALPHA2 GO - DC power consumption
   if (motor.has_dc_power && dc_power_sensor_ != nullptr) {
     dc_power_sensor_->publish_state(motor.dc_power_w);
@@ -125,11 +125,11 @@ void SensorPublisher::publish_flow_pressure(const protocol::FlowPressureTelemetr
 
   // Publish inlet pressure (often NaN on HWR models)
   if (flow.has_inlet_pressure && inlet_pressure_sensor_ != nullptr) {
-    if (!std::isnan(flow.inlet_pressure_bar)) {
-      inlet_pressure_sensor_->publish_state(flow.inlet_pressure_bar);
-    }
+    inlet_pressure_sensor_->publish_state(flow.inlet_pressure_bar); }
+  
+  if (flow.has_differential_pressure && differential_pressure_sensor_ != nullptr) {
+    differential_pressure_sensor_->publish_state(flow.differential_pressure_kpa);}
   }
-}
 
 void SensorPublisher::publish_temperature(const protocol::TemperatureTelemetry& temp) {
   // Log summary

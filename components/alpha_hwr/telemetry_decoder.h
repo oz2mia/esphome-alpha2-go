@@ -102,11 +102,16 @@ struct FlowPressureTelemetry {
   bool has_outlet_pressure;
   float outlet_pressure_bar;
 
+  bool has_differential_pressure;
+  float differential_pressure_kpa;
+
   FlowPressureTelemetry()
     : has_flow(false), flow_m3h(0),
       has_head(false), head_m(0),
       has_inlet_pressure(false), inlet_pressure_bar(0),
-      has_outlet_pressure(false), outlet_pressure_bar(0) {}
+      has_outlet_pressure(false), outlet_pressure_bar(0) {},
+      has_differential_pressure(false),
+      differential_pressure_kpa(0)
 };
 
 /**

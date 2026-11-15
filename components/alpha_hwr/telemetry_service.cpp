@@ -82,8 +82,6 @@ void TelemetryService::poll() {
   send_read_request(0x570045); // Motor state
   send_read_request(0x5D0122); // Flow/pressure
   send_read_request(0x5D012C); // Temperature
-  send_read_request(0x580000); // Alarms
-  send_read_request(0x58000B); // Warnings
 }
 
 void TelemetryService::on_packet(const uint8_t* data, size_t len) {

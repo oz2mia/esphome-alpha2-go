@@ -152,6 +152,11 @@ public:
   void set_head_rate_sensor(sensor::Sensor *sensor) {
     sensor_publisher_.set_head_rate_sensor(sensor);
   }
+
+  void set_differential_pressure_sensor(sensor::Sensor *sensor) {
+    sensor_publisher_.set_differential_pressure_sensor(sensor);
+  }
+
   static void set_outlet_pressure_sensor(
       sensor::Sensor * /*sensor*/) { /* Removed: HWR pump lacks this sensor */ }
   void set_pairing_status_binary_sensor(binary_sensor::BinarySensor *sensor) {

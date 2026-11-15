@@ -112,44 +112,24 @@ FlowPressureTelemetry decode_flow_pressure_response(const uint8_t* data, size_t 
   // [8] = Inlet pressure (bar) at offset 45 - often NaN
   // [9] = Outlet pressure (bar) at offset 49 - often NaN
   
-  // Flow rate (offset 37, float[6])
+   // Flow: m³/h
   if (len >= 41) {
     float flow = decode_float_be(data, 37);
-    if (!std::isnan(flow) && flow >= 0 && flow <= 100) {
+    if (std::isfinite(flow) && flow >= 0 && flow <= 100) {
       result.has_flow = true;
       result.flow_m3h = flow;
     }
   }
-  
-  // Head (offset 41, float[7])
+
+  // Head: meters
   if (len >= 45) {
     float head = decode_float_be(data, 41);
-    if (!std::isnan(head) && head >= 0 && head <= 50) {
+    if (std::isfinite(head) && head >= 0 && head <= 50) {
       result.has_head = true;
       result.head_m = head;
     }
   }
-  
-  // Inlet pressure (offset 45, float[8]) - may be NaN
-  if (len >= 49) {
-    float inlet_pressure = decode_float_be(data, 45);
-    // Allow NaN for pressure sensors
-    if (std::isnan(inlet_pressure) || (inlet_pressure >= 0 && inlet_pressure <= 20)) {
-      result.has_inlet_pressure = true;
-      result.inlet_pressure_bar = inlet_pressure;
-    }
-  }
-  
-  // Outlet pressure (offset 49, float[9]) - may be NaN
-  if (len >= 53) {
-    float outlet_pressure = decode_float_be(data, 49);
-    // Allow NaN for pressure sensors
-    if (std::isnan(outlet_pressure) || (outlet_pressure >= 0 && outlet_pressure <= 20)) {
-      result.has_outlet_pressure = true;
-      result.outlet_pressure_bar = outlet_pressure;
-    }
-  }
-  
+
   return result;
 }
 

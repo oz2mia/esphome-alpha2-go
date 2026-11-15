@@ -89,6 +89,7 @@ class SensorPublisher {
   void set_voltage_dc_sensor(sensor::Sensor *sensor) { voltage_dc_sensor_ = sensor; }
   void set_current_sensor(sensor::Sensor *sensor) { current_sensor_ = sensor; }
   void set_inlet_pressure_sensor(sensor::Sensor *sensor) { inlet_pressure_sensor_ = sensor; }
+  void set_differential_pressure_sensor(sensor::Sensor *sensor) { differential_pressure_sensor_ = sensor; }
   static void set_outlet_pressure_sensor(sensor::Sensor * /*sensor*/) { /* Removed: HWR pump lacks this sensor */ }
   void set_head_rate_sensor(sensor::Sensor *sensor);
   void setup_head_rate_callback();
