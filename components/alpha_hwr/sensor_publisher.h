@@ -166,6 +166,7 @@ class SensorPublisher {
   sensor::Sensor *current_sensor_{nullptr};
   sensor::Sensor *inlet_pressure_sensor_{nullptr};
   sensor::Sensor *head_rate_sensor_{nullptr};
+  sensor::Sensor *differential_pressure_sensor_{nullptr};
 
   // State for head derivative (callback-based, captures `this`)
   float prev_head_m_{NAN};
