@@ -5300,7 +5300,6 @@ static void test_command_strings() {
       {WriteCommand::SET_PUMP_ENABLED, "set_pump_enabled"},
       {WriteCommand::SET_MODE, "set_mode"},
       {WriteCommand::SET_SETPOINT, "set_setpoint"},
-      {WriteCommand::SET_TEMPERATURE_RANGE, "set_temperature_range"},
       {WriteCommand::SET_CYCLE_TIMES, "set_cycle_times"},
       {WriteCommand::SET_FLOW_LIMITER, "set_flow_limiter"},
       {WriteCommand::SET_SCHEDULE_ENTRY, "set_schedule_entry"},

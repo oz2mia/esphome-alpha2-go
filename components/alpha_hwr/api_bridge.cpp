@@ -400,13 +400,6 @@ void AlphaHwrApiBridge::fire_write_settled(const WriteResult &result) {
       // many for anything parsing write_settled.
       put_bool("remote_enabled", result.enabled);
       break;
-    case WriteCommand::SET_CLOCK:
-      // How far the pump's clock sits from the node's, measured after the
-      // write. Absent when no readback decoded a time -- which is every
-      // TIMEOUT, since a decoded readback settles the operation on the spot
-      // and only undecodable attempts retry.
-      put_float("clock_offset_s", result.clock_offset_s, "%.0f");
-      break;
     case WriteCommand::SET_PUMP_STATE:
       // Coupled selector: report both underlying flags plus the derived state
       // name, so the settled state is self-contained.

@@ -227,7 +227,6 @@ void AlphaHwrComponent::setup() {
     // the backoff must start over rather than inheriting the old link's.
     this->device_info_read_ok_ = false;
     this->statistics_read_ok_ = false;
-    this->initial_clock_sync_started_ = false;
     this->initial_read_retry_interval_ms_ = INITIAL_READ_SYNC_TIMEOUT_MS;
     
     // Invalidate caches so old values don't falsely satisfy ready gating
@@ -1299,48 +1298,7 @@ void AlphaHwrComponent::trigger_initial_data_reads() {
     // First attempt only: the drift figure is "how far out was the pump when we
     // found it", so a re-armed chain must not overwrite it with a reading taken
     // after a sync has already corrected the pump.
-    if (this->initial_clock_sync_started_) {
-      ESP_LOGD(TAG, "Skipping pump clock drift read on read-chain retry");
-      return;
-    }
-    this->initial_clock_sync_started_ = true;
-    ESP_LOGD(TAG, "Measuring pump clock drift...");
 
-    // First read the pump clock to measure drift
-    this->time_service_.get_clock_async([this, gen](ESPTime pump_time) {
-      // The generation check every other leg of this chain has, and the one
-      // this leg was missing (issue #259). Since reset() started failing what
-      // it abandons, a disconnect while this read is queued invokes this
-      // callback with an invalid time and the else-branch below publishes NAN
-      // -- to a user-facing sensor, on every dropped link, for as long as the
-      // read sits in the queue behind the rest of the chain. That is a wide
-      // window, not a race: a queued command has no timeout of its own, which
-      // is the whole subject of #259.
-      //
-      // It is also the clobber this leg already guards against one level up.
-      // The note on the timeout above says the drift figure is "how far out was
-      // the pump when we found it" and must not be overwritten by a later
-      // reading; overwriting it with NAN is the same defect with a worse value.
-      if (gen != this->read_chain_gen_) return;
-      if (pump_time.is_valid()) {
-        // Failure leaves the sensor alone on purpose -- see the helper, and the
-        // note above about not clobbering the found-it reading with NAN.
-        this->publish_clock_drift_(pump_time, "before sync");
-      } else {
-        ESP_LOGW(TAG, "Could not read pump clock for drift measurement");
-        // Publish NAN to indicate invalid/unknown drift
-        if (this->clock_diff_sensor_) {
-          this->clock_diff_sensor_->publish_state(NAN);
-        }
-      }
-
-      // No sync submitted here; see the note above this timeout.
-
-      // Same leg, because it is the same question asked one level up: the drift
-      // above says whether the two clocks agree NOW, and this says whether they
-      // will still agree in November (issue #286).
-      this->check_pump_dst_rule_(gen);
-    });
   });
 
   // The limiter family (issue #274). Read once per connection because the
@@ -1801,59 +1759,6 @@ bool AlphaHwrComponent::publish_clock_drift_(const ESPTime &pump_time,
   return true;
 }
 
-void AlphaHwrComponent::check_pump_dst_rule_(uint32_t gen) {
-#ifdef USE_TEXT_SENSOR
-  if (this->pump_clock_dst_text_sensor_ == nullptr)
-    return;  // nobody is asking, so do not spend a round trip on it
-#endif
-  this->time_service_.get_dst_rule_async([this, gen](services::DstRule pump_rule) {
-    // The generation guard every leg of this chain carries (issue #259): a
-    // disconnect while this read is queued fails it, and publishing "unknown"
-    // over a good answer on every dropped link is the same defect the drift
-    // leg above was fixed for.
-    if (gen != this->read_chain_gen_) return;
-
-    // The host's rule is asked for THIS year rather than cached: zones change
-    // their rules, and the answer that matters is the one for the year the
-    // pump is about to run a schedule in. Costs a few hundred localtime_r
-    // calls once per connection.
-    int year = 0;
-    ESPTime now;
-    if (this->time_service_.current_time(now))
-      year = static_cast<int>(now.year);
-
-    services::DstRule host_rule{};
-    if (year > 0)
-      host_rule = services::probe_host_dst_rule(year);
-
-    const services::DstAgreement agreement =
-        services::compare_dst_rules(pump_rule, host_rule, year);
-
-    // WARN rather than INFO on a mismatch, and once per connection rather than
-    // per poll. The symptom this exists to pre-empt -- "my schedule moved an
-    // hour in November" -- shows up months after the cause, so the log line has
-    // to be findable in a search rather than merely present.
-    if (agreement == services::DstAgreement::UNKNOWN) {
-      ESP_LOGD(TAG, "Pump DST rule not comparable yet (rule read or node clock missing)");
-    } else if (!services::dst_rules_agree(agreement)) {
-      ESP_LOGW(TAG, "Pump DST rule disagrees with this node's timezone: %s",
-               services::format_dst_agreement(agreement, pump_rule, host_rule).c_str());
-      ESP_LOGW(TAG, "Stored schedule windows will be an hour out on one side of "
-                    "a DST transition until this is resolved (issue #286)");
-    } else {
-      ESP_LOGI(TAG, "Pump DST rule agrees with this node's timezone");
-    }
-
-#ifdef USE_TEXT_SENSOR
-    if (this->pump_clock_dst_text_sensor_ != nullptr) {
-      publish_text_sensor_if_changed(
-          this->pump_clock_dst_text_sensor_,
-          services::format_dst_agreement(agreement, pump_rule, host_rule));
-    }
-#endif
-  });
-}
-
 bool AlphaHwrComponent::limiter_entities_wanted_() const {
   if (this->flow_limiter_active_binary_sensor_ != nullptr)
     return true;
@@ -1880,29 +1785,6 @@ void AlphaHwrComponent::publish_limiter_state_() {
 #endif
 }
 
-void AlphaHwrComponent::read_pump_clock() {
-  ESP_LOGI(TAG, "Manual pump clock read requested");
-
-  time_service_.get_clock_async([this](ESPTime pump_time) {
-    if (pump_time.is_valid()) {
-      ESP_LOGI(TAG, "Pump clock read successful: %04d-%02d-%02d %02d:%02d:%02d",
-               pump_time.year, pump_time.month, pump_time.day_of_month,
-               pump_time.hour, pump_time.minute, pump_time.second);
-      // Someone pressed the button, so answer them either way: a drift if we
-      // can compute one, NAN if the node cannot tell the time.
-      if (!this->publish_clock_drift_(pump_time, "on manual read")) {
-        if (this->clock_diff_sensor_) {
-          this->clock_diff_sensor_->publish_state(NAN);
-        }
-      }
-    } else {
-      ESP_LOGW(TAG, "Pump clock read failed or returned invalid time");
-      if (this->clock_diff_sensor_) {
-        this->clock_diff_sensor_->publish_state(NAN);
-      }
-    }
-  });
-}
 
 void AlphaHwrComponent::on_session_stabilized_() {
   // The transport's write callback dereferences parent_ unchecked (see

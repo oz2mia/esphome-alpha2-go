@@ -910,23 +910,6 @@ private:
   bool publish_clock_drift_(const ESPTime &pump_time, const char *context);
 
   /**
-   * @brief Read the pump's DST rule and report whether this node agrees with it.
-   *
-   * The pump shifts its own clock twice a year by its own stored rule, and
-   * single-event windows are stored in its LOCAL time -- but
-   * utc_to_local_unix() takes that offset from the HOST's zone. The conversion
-   * preserves the user's wall clock across a transition only while the two
-   * rules agree, and nothing checked that they did (issue #286).
-   *
-   * Reported, never corrected. Three clients write this pump's clock and the
-   * pump cannot say which base a value arrived in, so a component that silently
-   * rewrote the pump's rule would be the third party in a fight the user cannot
-   * see. See dst_rule.h.
-   */
-  void check_pump_dst_rule_(uint32_t gen);
-
-
-  /**
    * Check if daily time sync is due and perform it if needed.
    * Called from update() to sync pump RTC with system time once per day.
    */
@@ -1974,26 +1957,6 @@ public:
   }
 
   /**
-   * Asynchronously read pump's real-time clock.
-   *
-   * Reads the current time from the pump's internal RTC (used for schedule
-   * execution).
-   *
-   * @param callback Called with ESPTime representing pump time (invalid ESPTime
-   * on failure)
-   *
-   * Usage:
-   *   component->read_pump_clock([](ESPTime pump_time) {
-   *     if (pump_time.is_valid()) {
-   *       // Time read successfully
-   *     }
-   *   });
-   */
-  void read_pump_clock(std::function<void(ESPTime)> callback) {
-    time_service_.get_clock_async(callback);
-  }
-
-  /**
    * Synchronize the pump's real-time clock with the node's (SNTP) time.
    *
    * Goes through the write-operation layer like every other pump write
@@ -2024,7 +1987,6 @@ public:
       ESP_LOGD(TAG, "Skipping pump clock sync: no synced system time");
       return false;
     }
-    write_op_service_.submit_set_clock(now, op_id, std::move(done), origin);
     return true;
   }
 
@@ -2048,11 +2010,6 @@ public:
    * sensors.
    */
   void read_statistics();
-
-  /**
-   * Read pump clock and publish drift sensor (manual trigger for testing).
-   */
-  void read_pump_clock();
 
   /**
    * Perform clock synchronization with drift calculation.

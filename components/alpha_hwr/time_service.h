@@ -71,39 +71,6 @@ class TimeService {
   void set_time_id(time::RealTimeClock *time_id) { time_id_ = time_id; }
 #endif
 
-  /**
-   * @brief Read the pump's internal real-time clock.
-   *
-   * Reads from Object 94, SubID 101 (DateTimeActual).
-   *
-   * @param callback Called with pump time as ESPTime, or empty ESPTime on failure
-   *
-   * Implementation Notes:
-   * - Uses Class 10 GET on Object 94, SubID 101
-   * - Response format: [Status(2)][Length(1)][Year(2)][Month(1)][Day(1)][Hour(1)][Minute(1)][Second(1)]
-   * - Status 0x0000 = valid, 0xFFFF = unset
-   * - Year is big-endian uint16
-   * - Invalid dates (year < 1970) indicate unset clock
-   */
-  void get_clock_async(std::function<void(ESPTime)> callback);
-
-  /**
-   * @brief Read the pump's own daylight-saving rule.
-   *
-   * Object 94, SubID 102 (DaylightSavingTime), type 323 version 1. Ten bytes
-   * after the size header; see dst_rule.h for the layout and for why the
-   * component cares.
-   *
-   * The short version: the pump shifts its own clock twice a year by its own
-   * stored rule, single-event windows are stored in its local time, and
-   * utc_to_local_unix() takes that offset from the HOST's zone. The two have to
-   * agree, and nothing checked that they did (issue #286).
-   *
-   * @param callback Called with the decoded rule; `valid` is false when the
-   *   read failed or the frame was too short. Never called with a guess.
-   */
-  void get_dst_rule_async(std::function<void(DstRule)> callback);
-
 
   /**
    * @brief Wire primitive: write the pump's real-time clock.

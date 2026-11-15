@@ -29,7 +29,6 @@ enum class WriteCommand : uint8_t {
   CLEAR_SCHEDULE_ENTRY,
   SET_SCHEDULE_ENABLED,
   SET_REMOTE_MODE,
-  SET_CLOCK,        // pump RTC sync; internal-only, no service, event-surface
   SET_SINGLE_EVENT,
   CLEAR_SINGLE_EVENT,
   REFRESH_SCHEDULE,
@@ -314,9 +313,6 @@ class WriteOperationService {
    * worth answering -- not "our frame is what put it there". A pump that was
    * already correct settles ACCEPTED, and so it should.
    */
-  void submit_set_clock(const ESPTime &local_now, const std::string &op_id,
-                        std::function<void(bool)> done = nullptr,
-                        WriteOrigin origin = WriteOrigin::INTERNAL);
   void submit_set_mode(ControlMode mode, const std::string &op_id,
                        std::function<void(bool)> done = nullptr,
                        WriteOrigin origin = WriteOrigin::SERVICE);
@@ -606,8 +602,6 @@ class WriteOperationService {
   void confirm_schedule_entry_(uint32_t seq);
   void run_remote_mode_(uint32_t seq);
   void confirm_remote_mode_(uint32_t seq);
-  void run_set_clock_(uint32_t seq);
-  void confirm_set_clock_(uint32_t seq);
   void run_schedule_enabled_(uint32_t seq);
   void confirm_schedule_enabled_(uint32_t seq);
   void run_single_event_(uint32_t seq);
