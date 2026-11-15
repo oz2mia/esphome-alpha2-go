@@ -1343,13 +1343,6 @@ void AlphaHwrComponent::trigger_initial_data_reads() {
     });
   });
 
-  // Refresh schedule display
-  this->set_timeout(4000, [this, gen]() {
-    if (gen != this->read_chain_gen_) return;
-    ESP_LOGD(TAG, "Refreshing schedule display...");
-    this->update_schedule_display();
-  });
-
   // The limiter family (issue #274). Read once per connection because the
   // *configuration* only changes when somebody edits it in the GO app; the
   // status half is re-read on the control poll, since whether a limiter is
@@ -1399,18 +1392,6 @@ void AlphaHwrComponent::trigger_initial_data_reads() {
           if (success) {
             ESP_LOGD(TAG, "History trends read complete");
           }
-          this->set_timeout(2000, [this, gen]() {
-            if (gen != this->read_chain_gen_) return;
-            ESP_LOGD(TAG, "Reading single events...");
-            this->read_single_events(
-                [](bool success,
-                   const std::vector<services::SingleEvent> &events) {
-                  if (success) {
-                    ESP_LOGD("alpha_hwr", "Read %zu active single events",
-                             events.size());
-                  }
-                });
-          });
         });
       });
     });
@@ -1526,13 +1507,6 @@ void AlphaHwrComponent::update() {
 
     // Poll telemetry first
     telemetry_service_.poll();
-
-    // CRITICAL FIX: Space out schedule poll to avoid request collision
-    // The pump appears to have trouble handling concurrent Class 10 reads.
-    // Delay schedule poll by 500ms to ensure telemetry response completes
-    // first.
-    this->set_timeout("schedule_poll", 500,
-                      [this]() { schedule_service_.poll_state(); });
 
 #ifdef USE_TEXT_SENSOR
     // The Vacation display answers a question about NOW -- is the pump being
